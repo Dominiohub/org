@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego Interactivo de Anatomía Humana</title>
+    <style>
+        /* Estilos generales */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+        body {
+            background-color: #f3f4f6;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #1e40af;
+            font-size: 2.25rem;
+            margin-bottom: 10px;
+        }
+        
+        /* Estilos para sistemas */
+        .systems-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .system-card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            text-align: center;
+            padding: 20px;
+        }
+        .system-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+        .system-card.circulatory { background-color: #ef4444; }
+        .system-card.respiratory { background-color: #3b82f6; }
+        .system-card.digestive { background-color: #eab308; }
+        .system-card.nervous { background-color: #8b5cf6; }
+        .system-card.muscular { background-color: #ec4899; }
+        
+        .system-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        .system-card h2 {
+            color: white;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+        
+        /* Estilos para detalles de sistema */
+        .system-details {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .system-details h2 {
+            display: flex;
+            align-items: center;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: #1e40af;
+        }
+        .system-details h2 span {
+            margin-right: 10px;
+        }
+        .system-image {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .system-details p {
+            margin-bottom: 20px;
+            color: #4b5563;
+        }
+        .system-details h3 {
+            font-size: 1.25rem;
+            margin: 20px 0 10px 0;
+            color: #1e40af;
+        }
+        .system-details ul {
+            padding-left: 20px;
+            margin-bottom: 20px;
+        }
+        .system-details li {
+            margin-bottom: 5px;
+        }
+        
+        /* Botones */
+        .btn {
+            padding: 10px 20px;
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-weight: bold;
+            display: inline-block;
+        }
+        .btn:hover {
+            background-color: #1d4ed8;
+        }
+        .btn-back {
+            margin-bottom: 20px;
+        }
+        .btn-quiz {
+            background-color: #22c55e;
+            padding: 12px 24px;
+            font-size: 1rem;
+        }
+        .btn-quiz:hover {
+            background-color: #16a34a;
+        }
+        
+        /* Quiz */
+        .quiz-container {
+            background-color: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+            display: none;
+        }
+        .quiz-container h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #1e40af;
+        }
+        .quiz-container p {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .quiz-option {
+            padding: 15px;
+            background-color: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 5px;
+            text-align: left;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .quiz-option:hover {
+            background-color: #f9fafb;
+        }
+        .quiz-option.correct {
+            background-color: #dcfce7;
+            border: 2px solid #22c55e;
+        }
+        .quiz-option.incorrect {
+            background-color: #fee2e2;
+            border: 2px solid #ef4444;
+        }
+        .quiz-option.disabled {
+            background-color: #f3f4f6;
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
+        
+        /* Quiz Results */
+        .quiz-results {
+            background-color: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+            display: none;
+            text-align: center;
+        }
+        .quiz-results h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #1e40af;
+        }
+        .quiz-results p {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+        
+        /* How to play */
+        .how-to-play {
+            background-color: #eff6ff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-top: 40px;
+        }
+        .how-to-play h2 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #1e40af;
+        }
+        .how-to-play ol {
+            padding-left: 20px;
+        }
+        .how-to-play li {
+            margin-bottom: 10px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .systems-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Juego Interactivo de Anatomía Humana</h1>
+        </div>
+        
+        <!-- Sistemas -->
+        <div id="systems-container">
+            <p style="text-align: center; font-size: 1.1rem; margin-bottom: 30px;">Selecciona un sistema del cuerpo humano para aprender más sobre él:</p>
+            
+            <div class="systems-grid">
+                <div class="system-card circulatory" onclick="selectSystem('circulatory')">
+                    <div class="system-icon">❤️</div>
+                    <h2>Sistema Circulatorio</h2>
+                </div>
+                
+                <div class="system-card respiratory" onclick="selectSystem('respiratory')">
+                    <div class="system-icon">🫁</div>
+                    <h2>Sistema Respiratorio</h2>
+                </div>
+                
+                <div class="system-card digestive" onclick="selectSystem('digestive')">
+                    <div class="system-icon">🩲</div>
+                    <h2>Sistema Digestivo</h2>
+                </div>
+                
+                <div class="system-card nervous" onclick="selectSystem('nervous')">
+                    <div class="system-icon">🧠</div>
+                    <h2>Sistema Nervioso</h2>
+                </div>
+                
+                <div class="system-card muscular" onclick="selectSystem('muscular')">
+                    <div class="system-icon">💪</div>
+                    <h2>Sistema Muscular</h2>
+                </div>
+            </div>
+            
+            <div class="how-to-play">
+                <h2>¿Cómo jugar?</h2>
+                <ol>
+                    <li>Selecciona un sistema del cuerpo humano.</li>
+                    <li>Explora la información sobre ese sistema.</li>
+                    <li>Pon a prueba tus conocimientos con el quiz.</li>
+                    <li>¡Intenta conseguir la puntuación máxima en todos los sistemas!</li>
+                </ol>
+            </div>
+        </div>
+        
+        <!-- Detalles del Sistema Circulatorio -->
+        <div id="circulatory-details" class="system-details">
+            <button class="btn btn-back" onclick="goBack()">← Volver a sistemas</button>
+            <h2><span>❤️</span> Sistema Circulatorio</h2>
+            
+            <div class="system-image">
+                <svg viewBox="0 0 100 160" width="200" height="320">
+                    <!-- Silueta humana -->
+                    <path d="M50,0 C45,0 40,5 40,10 C40,15 45,20 50,25 C55,20 60,15 60,10 C60,5 55,0 50,0 Z" fill="#f5d0c5" />
+                    <path d="M40,10 C40,10 25,30 30,50 C35,70 40,80 40,90 C40,100 35,120 35,130 C35,140 40,160 50,160 C60,160 65,140 65,130 C65,120 60,100 60,90 C60,80 65,70 70,50 C75,30 60,10 60,10 Z" fill="#f5d0c5" />
+                    
+                    <!-- Corazón -->
+                    <path d="M50,40 C45,35 35,35 35,45 C35,55 50,65 50,65 C50,65 65,55 65,45 C65,35 55,35 50,40 Z" fill="#e74c3c" />
+                    
+                    <!-- Arterias principales -->
+                    <path d="M50,65 C50,65 50,80 50,90 M50,65 C50,65 40,60 35,50 M50,65 C50,65 60,60 65,50" stroke="#e74c3c" stroke-width="2" fill="none" />
+                    
+                    <!-- Más arterias y venas -->
+                    <path d="M35,50 C35,50 30,70 35,90 M65,50 C65,50 70,70 65,90" stroke="#e74c3c" stroke-width="1.5" fill="none" />
+                    <path d="M35,90 C35,90 40,100 50,110 C60,100 65,90 65,90" stroke="#9b59b6" stroke-width="1.5" fill="none" />
+                    <path d="M50,110 C50,110 50,120 50,140" stroke="#9b59b6" stroke-width="1.5" fill="none" />
+                </svg>
+            </div>
+            
+            <p>Responsable del transporte de sangre, nutrientes, hormonas, oxígeno y células inmunes por todo el cuerpo.</p>
+            
+            <h3>Componentes principales:</h3>
+            <ul>
+                <li>Corazón</li>
+                <li>Arterias</li>
+                <li>Venas</li>
+                <li>Capilares</li>
+                <li>Sangre</li>
+            </ul>
+            
+            <button class="btn btn-quiz" onclick="startQuiz('circulatory')">¡Pon a prueba tus conocimientos!</button>
+            
+            <div id="circulatory-quiz" class="quiz-container"></div>
+            <div id="circulatory-results" class="quiz-results"></div>
+        </div>
+        
+        <!-- Detalles del Sistema Respiratorio -->
+        <div id="respiratory-details" class="system-details">
+            <button class="btn btn-back" onclick="goBack()">← Volver a sistemas</button>
+            <h2><span>🫁</span> Sistema Respiratorio</h2>
+            
+            <div class="system-image">
+                <svg viewBox="0 0 100 160" width="200" height="320">
+                    <!-- Silueta humana -->
+                    <path d="M50,0 C45,0 40,5 40,10 C40,15 45,20 50,25 C55,20 60,15 60,10 C60,5 55,0 50,0 Z" fill="#f5d0c5" />
+                    <path d="M40,10 C40,10 25,30 30,50 C35,70 40,80 40,90 C40,100 35,120 35,130 C35,140 40,160 50,160 C60,160 65,140 65,130 C65,120 60,100 60,90 C60,80 65,70 70,50 C75,30 60,10 60,10 Z" fill="#f5d0c5" />
+                    
+                    <!-- Tráquea -->
+                    <path d="M50,30 L50,50" stroke="#3498db" stroke-width="3" fill="none" />
+                    
+                    <!-- Pulmones -->
+                    <path d="M35,45 C25,50 25,70 35,75 C45,80 45,40 35,45 Z" fill="#3498db" />
+                    <path d="M65,45 C75,50 75,70 65,75 C55,80 55,40 65,45 Z" fill="#3498db" />
+                    
+                    <!-- Bronquios -->
+                    <path d="M50,50 L35,55 M50,50 L65,55" stroke="#3498db" stroke-width="2" fill="none" />
+                    
+                    <!-- Diafragma -->
+                    <path d="M30,80 Q50,90 70,80" stroke="#2ecc71" stroke-width="2" fill="none" />
+                </svg>
+            </div>
+            
+            <p>Permite la respiración y el intercambio de oxígeno y dióxido de carbono entre el cuerpo y el ambiente.</p>
+            
+            <h3>Componentes principales:</h3>
+            <ul>
+                <li>Pulmones</li>
+                <li>Tráquea</li>
+                <li>Bronquios</li>
+                <li>Alvéolos</li>
+                <li>Diafragma</li>
+            </ul>
+            
+            <button class="btn btn-quiz" onclick="startQuiz('respiratory')">¡Pon a prueba tus conocimientos!</button>
+            
+            <div id="respiratory-quiz" class="quiz-container"></div>
+            <div id="respiratory-results" class="quiz-results"></div>
+        </div>
+        
+        <!-- Detalles del Sistema Digestivo -->
+        <div id="digestive-details" class="system-details">
+            <button class="btn btn-back" onclick="goBack()">← Volver a sistemas</button>
+            <h2><span>🩲</span> Sistema Digestivo</h2>
+            
+            <div class="system-image">
+                <svg viewBox="0 0 100 160" width="200" height="320">
+                    <!-- Silueta humana -->
+                    <path d="M50,0 C45,0 40,5 40,10 C40,15 45,20 50,25 C55,20 60,15 60,10 C60,5 55,0 50,0 Z" fill="#f5d0c5" />
+                    <path d="M40,10 C40,10 25,30 30,50 C35,70 40,80 40,90 C40,100 35,120 35,130 C35,140 40,160 50,160 C60,160 65,140 65,130 C65,120 60,100 60,90 C60,80 65,70 70,50 C75,30 60,10 60,10 Z" fill="#f5d0c5" />
+                    
+                    <!-- Boca -->
+                    <path d="M45,20 Q50,23 55,20" stroke="#f39c12" stroke-width="1.5" fill="none" />
+                    
+                    <!-- Esófago -->
+                    <path d="M50,25 C50,25 50,35 50,45" stroke="#f39c12" stroke-width="2" fill="none" />
+                    
+                    <!-- Estómago -->
+                    <path d="M50,45 C50,45 60,45 60,55 C60,65 50,70 45,65 C40,60 45,50 50,45 Z" fill="#f39c12" />
+                    
+                    <!-- Intestinos -->
+                    <path d="M45,65 C45,65 30,70 30,80 C30,90 40,95 50,90 C60,85 70,90 70,100 C70,110 60,115 50,110 C40,105 30,110 30,120 C30,130 45,130 50,125" stroke="#f39c12" stroke-width="3" fill="none" />
+                    
+                    <!-- Hígado -->
+                    <path d="M35,50 C30,45 30,55 35,60 C40,65 45,55 35,50 Z" fill="#e74c3c" />
+                </svg>
+            </div>
+            
+            <p>Procesa los alimentos para extraer energía y nutrientes, eliminando los desechos no utilizables.</p>
+            
+            <h3>Componentes principales:</h3>
+            <ul>
+                <li>Boca</li>
+                <li>Esófago</li>
+                <li>Estómago</li>
+                <li>Intestinos</li>
+                <li>Hígado</li>
+                <li>Páncreas</li>
+            </ul>
+            
+            <button class="btn btn-quiz" onclick="startQuiz('digestive')">¡Pon a prueba tus conocimientos!</button>
+            
+            <div id="digestive-quiz" class="quiz-container"></div>
+            <div id="digestive-results" class="quiz-results"></div>
+        </div>
+        
+        <!-- Detalles del Sistema Nervioso -->
+        <div id="nervous-details" class="system-details">
+            <button class="btn btn-back" onclick="goBack()">← Volver a sistemas</button>
+            <h2><span>🧠</span> Sistema Nervioso</h2>
+            
+            <div class="system-image">
+                <svg viewBox="0 0 100 160" width="200" height="320">
+                    <!-- Silueta humana -->
+                    <path d="M50,0 C45,0 40,5 40,10 C40,15 45,20 50,25 C55,20 60,15 60,10 C60,5 55,0 50,0 Z" fill="#f5d0c5" />
+                    <path d="M40,10 C40,10 25,30 30,50 C35,70 40,80 40,90 C40,100 35,120 35,130 C35,140 40,160 50,160 C60,160 65,140 65,130 C65,120 60,100 60,90 C60,80 65,70 70,50 C75,30 60,10 60,10 Z" fill="#f5d0c5" />
+                    
+                    <!-- Cerebro -->
+                    <path d="M40,10 C40,5 60,5 60,10 C60,15 55,20 50,20 C45,20 40,15 40,10 Z" fill="#9b59b6" />
+                    <path d="M42,8 C42,8 45,12 50,12 C55,12 58,8 58,8 M44,14 C44,14 50,16 56,14" stroke="#8e44ad" stroke-width="1" fill="none" />
+                    
+                    <!-- Médula espinal -->
+                    <path d="M50,20 C50,20 50,90 50,120" stroke="#9b59b6" stroke-width="2" fill="none" />
+                    
+                    <!-- Nervios -->
+                    <path d="M50,40 C50,40 35,35 25,45 M50,40 C50,40 65,35 75,45 M50,60 C50,60 35,55 25,65 M50,60 C50,60 65,55 75,65 M50,80 C50,80 35,75 25,85 M50,80 C50,80 65,75 75,85 M50,100 C50,100 40,95 35,105 M50,100 C50,100 60,95 65,105 M50,120 C50,120 40,115 35,125 M50,120 C50,120 60,115 65,125" stroke="#9b59b6" stroke-width="1" fill="none" />
+                </svg>
+            </div>
+            
+            <p>Coordina las acciones del cuerpo mediante señales transmitidas entre el cerebro y diferentes partes del cuerpo.</p>
+            
+            <h3>Componentes principales:</h3>
+            <ul>
+                <li>Cerebro</li>
+                <li>Médula espinal</li>
+                <li>Nervios</li>
+                <li>Neuronas</li>
+            </ul>
+            
+            <button class="btn btn-quiz" onclick="startQuiz('nervous')">¡Pon a prueba tus conocimientos!</button>
+            
+            <div id="nervous-quiz" class="quiz-container"></div>
+            <div id="nervous-results" class="quiz-results"></div>
+        </div>
+        
+        <!-- Detalles del Sistema Muscular -->
+        <div id="muscular-details" class="system-details">
+            <button class="btn btn-back" onclick="goBack()">← Volver a sistemas</button>
+            <h2><span>💪</span> Sistema Muscular</h2>
+            
+            <div class="system-image">
+                <svg viewBox="0 0 100 160" width="200" height="320">
+                    <!-- Silueta humana -->
+                    <path d="M50,0 C45,0 40,5 40,10 C40,15 45,20 50,25 C55,20 60,15 60,10 C60,5 55,0 50,0 Z" fill="#f5d0c5" />
+                    <path d="M40,10 C40,10 25,30 30,50 C35,70 40,80 40,90 C40,100 35,120 35,130 C35,140 40,160 50,160 C60,160 65,140 65,130 C65,120 60,100 60,90 C60,80 65,70 70,50 C75,30 60,10 60,10 Z" fill="#f5d0c5" />
+                    
+                    <!-- Músculos principales -->
+                    <!-- Deltoides -->
+                    <path d="M35,30 C30,35 30,40 35,45 M65,30 C70,35 70,40 65,45" stroke="#e74c3c" stroke-width="2" fill="none" />
+                    
+                    <!-- Pectorales -->
+                    <path d="M40,35 C45,40 55,40 60,35" stroke="#e74c3c" stroke-width="2" fill="none" />
+                    
+                    <!-- Bíceps -->
+                    <path d="M32,40 C28,50 30,55 35,55 M68,40 C72,50 70,55 65,55" stroke="#e74c3c" stroke-width="2" fill="none" />
+                    
+                    <!-- Abdominales -->
+                    <path d="M45,50 C45,50 55,50 55,50 M45,60 C45,60 55,60 55,60 M45,70 C45,70 55,70 55,70" stroke="#e74c3c" stroke-width="2" fill="none" />
+                    
+                    <!-- Cuádriceps -->
+                    <path d="M40,90 C40,90 35,110 40,120 M60,90 C60,90 65,110 60,120" stroke="#e74c3c" stroke-width="2" fill="none" />
+                    
+                    <!-- Gemelos -->
+                    <path d="M40,130 C38,140 40,150 45,150 M60,130 C62,140 60,150 55,150" stroke="#e74c3c" stroke-width="2" fill="none" />
+                </svg>
+            </div>
+            
+            <p>Permite el movimiento del cuerpo y mantiene la postura mediante la contracción y relajación muscular.</p>
+            
+            <h3>Componentes principales:</h3>
+            <ul>
+                <li>Músculos esqueléticos</li>
+                <li>Músculos lisos</li>
+                <li>Músculo cardíaco</li>
+                <li>Tendones</li>
+            </ul>
+            
+            <button class="btn btn-quiz" onclick="startQuiz('muscular')">¡Pon a prueba tus conocimientos!</button>
+            
+            <div id="muscular-quiz" class="quiz-container"></div>
+            <div id="muscular-results" class="quiz-results"></div>
+        </div>
+    </div>
+
+    <script>
+        // Base de datos del juego
+        const systems = {
+            circulatory: {
+                quizzes: [
+                    {
+                        question: '¿Cuál es el órgano principal del sistema circulatorio?',
+                        options: ['Cerebro', 'Corazón', 'Pulmones', 'Hígado'],
+                        correctAnswer: 'Corazón'
+                    },
+                    {
+                        question: '¿Qué tipo de vasos llevan sangre desde el corazón hacia los tejidos?',
+                        options: ['Venas', 'Arterias', 'Capilares', 'Vasos linfáticos'],
+                        correctAnswer: 'Arterias'
+                    },
+                    {
+                        question: '¿Cuántas cámaras tiene el corazón humano?',
+                        options: ['2', '3', '4', '5'],
+                        correctAnswer: '4'
+                    }
+                ]
+            },
+            respiratory: {
+                quizzes: [
+                    {
+                        question: '¿Cuáles son los órganos principales del sistema respiratorio?',
+                        options: ['Riñones', 'Corazón', 'Pulmones', 'Estómago'],
+                        correctAnswer: 'Pulmones'
+                    },
+                    {
+                        question: '¿Qué gas inhala principalmente el ser humano?',
+                        options: ['Dióxido de carbono', 'Nitrógeno', 'Oxígeno', 'Hidrógeno'],
+                        correctAnswer: 'Oxígeno'
+                    },
+                    {
+                        question: '¿Qué músculo es esencial para la respiración?',
+                        options: ['Bíceps', 'Diafragma', 'Glúteos', 'Tríceps'],
+                        correctAnswer: 'Diafragma'
+                    }
+                ]
+            },
+            digestive: {
+                quizzes: [
+                    {
+                        question: '¿Por dónde comienza el proceso digestivo?',
+                        options: ['Estómago', 'Boca', 'Intestino delgado', 'Esófago'],
+                        correctAnswer: 'Boca'
+                    },
+                    {
+                        question: '¿Qué órgano produce la bilis?',
+                        options: ['Páncreas', 'Estómago', 'Hígado', 'Vesícula biliar'],
+                        correctAnswer: 'Hígado'
+                    },
+                    {
+                        question: '¿Dónde ocurre la mayor parte de la absorción de nutrientes?',
+                        options: ['Estómago', 'Intestino grueso', 'Intestino delgado', 'Esófago'],
+                        correctAnswer: 'Intestino delgado'
+                    }
+                ]
+            },
+            nervous: {
+                quizzes: [
+                    {
+                        question: '¿Cuál es el órgano central del sistema nervioso?',
+                        options: ['Médula espinal', 'Cerebro', 'Nervios', 'Coraz
